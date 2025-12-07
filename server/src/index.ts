@@ -1,13 +1,33 @@
-import express, { Request, Response } from 'express';
-import dotenv from 'dotenv';
-dotenv.config();
+import app from './app';
+import { env, validateEnv } from './config/env';
+import { getPrismaClient, disconnectPrisma } from './prisma/client';
 
-const app = express();
-app.use(express.json());
+validateEnv();
 
-app.get('/', (req: Request, res: Response) => {
-   res.send('Hello world!');
+const prisma = getPrismaClient();
+
+const server = app.listen(env.port, () => {
+   console.log(`Server running on port ${env.port}`);
+   console.log(`Environment: ${env.nodeEnv}`);
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const gracefulShutdown = async (signal: string) => {
+   console.log(`\n${signal} received, shutting down gracefully...`);
+
+   server.close(async () => {
+      console.log('HTTP server closed');
+
+      await disconnectPrisma();
+      console.log('Database connection closed');
+
+      process.exit(0);
+   });
+
+   setTimeout(() => {
+      console.error('Forced shutdown after timeout');
+      process.exit(1);
+   }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
