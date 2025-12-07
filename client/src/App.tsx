@@ -1,11 +1,10 @@
-import { Button } from "@/components/ui/button";
+import { RouterProvider } from "@tanstack/react-router";
+import { useAuth } from "./hooks/use-auth";
+import { router } from "./router";
 
 function App() {
-  return (
-    <div className="flex min-h-svh flex-col items-center justify-center">
-      <Button variant="ghost">Click me</Button>
-    </div>
-  );
+  const { isAuthenticated } = useAuth();
+  return <RouterProvider router={router} context={{ isAuthenticated }} />;
 }
 
 export default App;
