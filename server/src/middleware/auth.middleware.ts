@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, JwtPayload } from '../utils/jwt';
 import { UnauthorizedError } from '../utils/httpErrors';
-import { UserRole } from '../generated/prisma';
+import { UserRole } from '../generated/prisma/client';
 
 export interface UserContext {
    userId: number;
@@ -17,11 +17,7 @@ declare global {
    }
 }
 
-export const authenticate = (
-   req: Request,
-   res: Response,
-   next: NextFunction
-): void => {
+export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
    try {
       const authHeader = req.headers.authorization;
 
@@ -51,9 +47,7 @@ export const requireRoles = (...roles: UserRole[]) => {
       }
 
       if (!roles.includes(req.user.role)) {
-         return next(
-            new UnauthorizedError(`Required role: ${roles.join(' or ')}`)
-         );
+         return next(new UnauthorizedError(`Required role: ${roles.join(' or ')}`));
       }
 
       next();
