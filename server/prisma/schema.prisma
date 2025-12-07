@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  QA
+  DEV
+  PM
+  CLIENT
+}
+
+enum IssueStatus {
+  NEW
+  IN_PROGRESS
+  READY_FOR_QA
+  REOPENED
+  CLOSED
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IssueSeverity {
+  TRIVIAL
+  MINOR
+  MAJOR
+  CRITICAL
+}
+
+enum CodeChangeType {
+  COMMIT
+  PULL_REQUEST
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  role         UserRole
+  active       Boolean  @default(true)
+  passwordHash String
+
+  reportedIssues Issue[]        @relation("IssueReporter")
+  assignedIssues Issue[]        @relation("IssueAssignee")
+  comments       Comment[]
+  watching       IssueWatcher[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Issue {
+  id          Int           @id @default(autoincrement())
+  key         String        @unique
+  title       String
+  description String
+  status      IssueStatus   @default(NEW)
+  priority    IssuePriority
+  severity    IssueSeverity
+  environment String?
+
+  reporterId Int
+  assigneeId Int?
+
+  reporter User  @relation("IssueReporter", fields: [reporterId], references: [id])
+  assignee User? @relation("IssueAssignee", fields: [assigneeId], references: [id])
+
+  comments  Comment[]
+  watchers  IssueWatcher[]
+  codeLinks IssueCodeChange[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([assigneeId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  issueId   Int
+  authorId  Int
+  text      String
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  issue  Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  author User  @relation(fields: [authorId], references: [id])
+
+  @@index([issueId])
+  @@index([authorId])
+}
+
+model CodeChange {
+  id         Int            @id @default(autoincrement())
+  type       CodeChangeType
+  externalId String
+  title      String
+  url        String
+  author     String
+  occurredAt DateTime
+
+  issues IssueCodeChange[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([type, externalId])
+  @@index([occurredAt])
+}
+
+model IssueCodeChange {
+  issueId      Int
+  codeChangeId Int
+
+  issue      Issue      @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  codeChange CodeChange @relation(fields: [codeChangeId], references: [id], onDelete: Cascade)
+  linkedAt   DateTime   @default(now())
+
+  @@id([issueId, codeChangeId])
+  @@index([codeChangeId])
+}
+
+model IssueWatcher {
+  issueId Int
+  userId  Int
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([issueId, userId])
+  @@index([userId])
+}
