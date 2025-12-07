@@ -13,8 +13,8 @@ export const authService = {
    },
 
    async getCurrentUser(): Promise<User> {
-      const response = await apiClient.get<User>('/auth/me')
-      return response.data
+      const response = await apiClient.get<{ user: User }>('/auth/me')
+      return response.data.user
    },
 
    setToken(token: string): void {

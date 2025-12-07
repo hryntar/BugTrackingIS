@@ -6,6 +6,7 @@ interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   isLoading: boolean;
+  refetch: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
@@ -17,9 +18,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return !!authService.getToken();
   });
 
-  useEffect(() => {
+  const fetchUser = async () => {
     const token = authService.getToken();
 
+    if (!token) {
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const userData = await authService.getCurrentUser();
+      setUser(userData);
+      setIsAuthenticated(true);
+      setIsLoading(false);
+    } catch {
+      authService.removeToken();
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const token = authService.getToken();
     if (!token) {
       return;
     }
@@ -33,6 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {
         authService.removeToken();
+        setUser(null);
+        setIsAuthenticated(false);
         setIsLoading(false);
       });
   }, []);
@@ -45,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  return <AuthContext.Provider value={{ isAuthenticated, user, isLoading }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ isAuthenticated, user, isLoading, refetch: fetchUser }}>{children}</AuthContext.Provider>;
 }
 
 AuthProvider.displayName = "AuthProvider";
