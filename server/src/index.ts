@@ -29,5 +29,8 @@ const gracefulShutdown = async (signal: string) => {
    }, 10000);
 };
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+if (env.nodeEnv === 'production') {
+   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+}
