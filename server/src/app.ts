@@ -8,6 +8,7 @@ import userRoutes from './modules/users/user.routes';
 import issueRoutes from './modules/issues/issue.routes';
 import commentRoutes from './modules/comments/comment.routes';
 import codeChangeRoutes from './modules/codeChanges/codeChange.routes';
+import integrationRoutes from './modules/integrations/integration.routes';
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api', commentRoutes);
 app.use('/api', codeChangeRoutes);
+app.use('/api/integrations', integrationRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

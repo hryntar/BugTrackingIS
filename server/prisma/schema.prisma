@@ -89,14 +89,14 @@ model Issue {
 model Comment {
   id        Int      @id @default(autoincrement())
   issueId   Int
-  authorId  Int
+  authorId  Int?
   text      String
   isSystem  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   issue  Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  author User  @relation(fields: [authorId], references: [id])
+  author User? @relation(fields: [authorId], references: [id])
 
   @@index([issueId])
   @@index([authorId])
