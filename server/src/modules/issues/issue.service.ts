@@ -69,6 +69,11 @@ export class IssueService {
                   name: true,
                },
             },
+            watchers: {
+               select: {
+                  userId: true,
+               },
+            },
          },
       });
 
@@ -76,7 +81,7 @@ export class IssueService {
          throw new NotFoundError('Issue not found');
       }
 
-      return this.mapToIssueResponse(issue);
+      return this.mapToIssueResponse(issue, currentUser.userId);
    }
 
    async listIssues(
@@ -99,6 +104,14 @@ export class IssueService {
 
       if (filters.reporterId) {
          where.reporterId = filters.reporterId;
+      }
+
+      if (filters.watcherId) {
+         where.watchers = {
+            some: {
+               userId: filters.watcherId,
+            },
+         };
       }
 
       if (filters.search) {
@@ -340,7 +353,10 @@ export class IssueService {
       return { subscribed: true };
    }
 
-   private mapToIssueResponse(issue: any): IssueResponse {
+   private mapToIssueResponse(issue: any, currentUserId?: number): IssueResponse {
+      const isWatching = currentUserId ? issue.watchers?.some((w: any) => w.userId === currentUserId) : undefined;
+      const watchersCount = issue.watchers?.length;
+
       return {
          id: issue.id,
          key: issue.key,
@@ -354,6 +370,8 @@ export class IssueService {
          assignee: issue.assignee,
          createdAt: issue.createdAt,
          updatedAt: issue.updatedAt,
+         ...(isWatching !== undefined && { isWatching }),
+         ...(watchersCount !== undefined && { watchersCount }),
       };
    }
 }

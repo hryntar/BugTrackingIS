@@ -20,6 +20,7 @@ export interface IssueListFilters {
    status?: IssueStatus;
    assigneeId?: number;
    reporterId?: number;
+   watcherId?: number;
    search?: string;
    page?: number;
    pageSize?: number;
@@ -44,6 +45,8 @@ export interface IssueResponse {
    } | null;
    createdAt: Date;
    updatedAt: Date;
+   isWatching?: boolean;
+   watchersCount?: number;
 }
 
 export interface IssueListResponse {

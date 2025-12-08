@@ -116,6 +116,14 @@ export const listIssues = async (
          filters.reporterId = parsedReporterId;
       }
 
+      if (req.query.watcherId) {
+         const parsedWatcherId = parseInt(req.query.watcherId as string, 10);
+         if (isNaN(parsedWatcherId)) {
+            throw new ValidationError('Invalid watcherId');
+         }
+         filters.watcherId = parsedWatcherId;
+      }
+
       if (search) {
          filters.search = search as string;
       }
