@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRegister } from "@/hooks/use-register";
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth";
+import { AbstractBackground } from "@/components/ui/abstract-background";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,8 +36,9 @@ function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
-      <Card className="w-full max-w-md">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+      <AbstractBackground />
+      <Card className="relative z-10 w-full max-w-md shadow-xl backdrop-blur-sm bg-white/95">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
           <CardDescription>Enter your information to get started with bug tracking</CardDescription>
