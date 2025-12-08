@@ -1,8 +1,14 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useAuth } from "@/hooks/use-auth";
-import { useLogout } from "@/hooks/use-logout";
+import { useIssuesPage } from "@/hooks/use-issues-page";
+import { AppShell } from "@/components/layout";
+import { IssuesFilter } from "@/components/issues-filter";
+import { IssuesTable } from "@/components/issues-table";
+import { AssignIssueDialog } from "@/components/assign-issue-dialog";
+import { ChangeStatusDialog } from "@/components/change-status-dialog";
+import { IssuesViewTabs, IssuesPagination, IssuesLoading, IssuesEmptyState } from "@/components/issues";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { Plus } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   beforeLoad: ({ context }) => {
@@ -12,89 +18,112 @@ export const Route = createFileRoute("/")({
       });
     }
   },
-  component: DashboardPage,
+  component: IssuesPage,
 });
 
-function DashboardPage() {
-  const { user } = useAuth();
-  const { mutate: logout, isPending } = useLogout();
+function IssuesPage() {
+  const {
+    view,
+    filters,
+    selectedIssue,
+    assignDialogOpen,
+    statusDialogOpen,
+    user,
+    users,
+    issues,
+    issuesTotal,
+    usersLoading,
+    issuesLoading,
+    isAssigning,
+    isChangingStatus,
+    canCreateIssue,
+    setView,
+    setFilters,
+    setAssignDialogOpen,
+    setStatusDialogOpen,
+    handleTakeIssue,
+    handleAssignIssue,
+    handleChangeStatus,
+    handleOpenAssignDialog,
+    handleOpenStatusDialog,
+    handlePageChange,
+  } = useIssuesPage();
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/40">
-      <header className="sticky top-0 z-10 border-b bg-background">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div>
-            <h1 className="text-xl font-bold">Bug Tracking System</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-sm">
-              <p className="font-medium">{user?.name}</p>
-              <p className="text-muted-foreground">{user?.role}</p>
+    <AppShell>
+      <div className="container max-w-7xl px-4 py-8 md:px-6 md:py-10">
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold tracking-tight">Issues</h1>
+              <p className="text-muted-foreground">Track and manage bugs across your projects</p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => logout()} disabled={isPending}>
-              {isPending ? "Signing out..." : "Sign out"}
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="container flex-1 px-4 py-8">
-        <div className="mx-auto max-w-4xl space-y-6">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name}!</h2>
-            <p className="text-muted-foreground">Here's an overview of your bug tracking workspace</p>
+            {canCreateIssue && (
+              <Button className="gap-2 self-start sm:self-auto">
+                <Plus className="h-4 w-4" />
+                Create Issue
+              </Button>
+            )}
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Total Issues</CardTitle>
-                <CardDescription>All tracked bugs</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">0</div>
-              </CardContent>
-            </Card>
+          {/* View Tabs */}
+          <IssuesViewTabs view={view} onViewChange={setView} />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Open Issues</CardTitle>
-                <CardDescription>Currently active</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">0</div>
-              </CardContent>
-            </Card>
+          {/* Filters */}
+          <Card className="p-6">
+            {usersLoading ? (
+              <IssuesLoading message="Loading filters..." />
+            ) : (
+              <IssuesFilter filters={filters} onFiltersChange={setFilters} users={users} />
+            )}
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Resolved</CardTitle>
-                <CardDescription>Completed bugs</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">0</div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Issues List */}
+          <Card className="p-6">
+            {issuesLoading ? (
+              <IssuesLoading />
+            ) : issues.length === 0 ? (
+              <IssuesEmptyState view={view} />
+            ) : (
+              <div className="space-y-6">
+                <IssuesTable
+                  issues={issues}
+                  currentUser={user!}
+                  onTakeIssue={handleTakeIssue}
+                  onOpenAssignDialog={handleOpenAssignDialog}
+                  onOpenStatusDialog={handleOpenStatusDialog}
+                />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Getting Started</CardTitle>
-              <CardDescription>Your bug tracking dashboard is ready</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-sm text-muted-foreground">This is a placeholder dashboard. Future features will include:</p>
-              <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
-                <li>Issue list and management</li>
-                <li>Bug status tracking and workflows</li>
-                <li>Comments and collaboration</li>
-                <li>GitHub integration for code changes</li>
-                <li>User and team management</li>
-              </ul>
-            </CardContent>
+                <IssuesPagination
+                  currentPage={filters.page || 1}
+                  pageSize={filters.pageSize || 20}
+                  total={issuesTotal}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
           </Card>
         </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Dialogs */}
+      <AssignIssueDialog
+        issue={selectedIssue}
+        users={users}
+        open={assignDialogOpen}
+        onOpenChange={setAssignDialogOpen}
+        onAssign={handleAssignIssue}
+        isLoading={isAssigning}
+      />
+
+      <ChangeStatusDialog
+        issue={selectedIssue}
+        open={statusDialogOpen}
+        onOpenChange={setStatusDialogOpen}
+        onChangeStatus={handleChangeStatus}
+        isLoading={isChangingStatus}
+      />
+    </AppShell>
   );
 }

@@ -32,3 +32,56 @@ export interface ApiError {
       details?: unknown
    }
 }
+
+export type IssueStatus = 'NEW' | 'IN_PROGRESS' | 'READY_FOR_QA' | 'REOPENED' | 'CLOSED'
+
+export type IssuePriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+
+export type IssueSeverity = 'TRIVIAL' | 'MINOR' | 'MAJOR' | 'CRITICAL'
+
+export interface IssueUser {
+   id: number
+   name: string
+}
+
+export interface Issue {
+   id: number
+   key: string
+   title: string
+   description: string
+   status: IssueStatus
+   priority: IssuePriority
+   severity: IssueSeverity
+   environment: string | null
+   reporter: IssueUser
+   assignee: IssueUser | null
+   createdAt: string
+   updatedAt: string
+}
+
+export interface IssueListResponse {
+   items: Issue[]
+   page: number
+   pageSize: number
+   total: number
+}
+
+export interface IssueListFilters {
+   status?: IssueStatus
+   assigneeId?: number
+   reporterId?: number
+   search?: string
+   page?: number
+   pageSize?: number
+}
+
+export type IssueListView = 'all' | 'my' | 'reported' | 'watching'
+
+export interface CreateIssueRequest {
+   title: string
+   description: string
+   priority: IssuePriority
+   severity: IssueSeverity
+   environment?: string | null
+   subscribeToUpdates?: boolean
+}
