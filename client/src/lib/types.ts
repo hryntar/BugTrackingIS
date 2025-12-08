@@ -57,6 +57,8 @@ export interface Issue {
    assignee: IssueUser | null
    createdAt: string
    updatedAt: string
+   isWatching?: boolean
+   watchersCount?: number
 }
 
 export interface IssueListResponse {
@@ -70,6 +72,7 @@ export interface IssueListFilters {
    status?: IssueStatus
    assigneeId?: number
    reporterId?: number
+   watcherId?: number
    search?: string
    page?: number
    pageSize?: number
@@ -82,6 +85,40 @@ export interface CreateIssueRequest {
    description: string
    priority: IssuePriority
    severity: IssueSeverity
-   environment?: string | null
+   environment?: string
    subscribeToUpdates?: boolean
+}
+
+export type CodeChangeType = 'COMMIT' | 'PULL_REQUEST'
+
+export interface CodeChange {
+   id: number
+   type: CodeChangeType
+   externalId: string
+   title: string
+   url: string
+   author: string
+   occurredAt: string
+   createdAt: string
+   updatedAt: string
+}
+
+export interface Comment {
+   id: number
+   author: {
+      id: number
+      name: string
+   } | null
+   text: string
+   isSystem: boolean
+   createdAt: string
+   updatedAt: string
+}
+
+export interface CreateCommentRequest {
+   text: string
+}
+
+export interface UpdateCommentRequest {
+   text: string
 }

@@ -17,7 +17,7 @@ export function AssignIssueDialog({ issue, users, open, onOpenChange, onAssign, 
   const [selectedUserId, setSelectedUserId] = useState<string>("");
 
   const handleAssign = () => {
-    if (issue && selectedUserId) {
+    if (selectedUserId && issue) {
       onAssign(issue.id, parseInt(selectedUserId));
     }
   };

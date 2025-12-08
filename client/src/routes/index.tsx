@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useIssuesPage } from "@/hooks/use-issues-page";
 import { AppShell } from "@/components/layout";
 import { IssuesFilter } from "@/components/issues-filter";
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/")({
 });
 
 function IssuesPage() {
+  const navigate = useNavigate();
   const {
     view,
     filters,
@@ -51,26 +52,23 @@ function IssuesPage() {
 
   return (
     <AppShell>
-      <div className="container max-w-7xl px-4 py-8 md:px-6 md:py-10">
+      <div className="container max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-10">
         <div className="space-y-8">
-          {/* Header */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <h1 className="text-3xl font-bold tracking-tight">Issues</h1>
               <p className="text-muted-foreground">Track and manage bugs across your projects</p>
             </div>
             {canCreateIssue && (
-              <Button className="gap-2 self-start sm:self-auto">
+              <Button className="gap-2 self-start sm:self-auto" onClick={() => navigate({ to: "/issues/new" })}>
                 <Plus className="h-4 w-4" />
                 Create Issue
               </Button>
             )}
           </div>
 
-          {/* View Tabs */}
           <IssuesViewTabs view={view} onViewChange={setView} />
 
-          {/* Filters */}
           <Card className="p-6">
             {usersLoading ? (
               <IssuesLoading message="Loading filters..." />
@@ -79,7 +77,6 @@ function IssuesPage() {
             )}
           </Card>
 
-          {/* Issues List */}
           <Card className="p-6">
             {issuesLoading ? (
               <IssuesLoading />
@@ -106,8 +103,6 @@ function IssuesPage() {
           </Card>
         </div>
       </div>
-
-      {/* Dialogs */}
       <AssignIssueDialog
         issue={selectedIssue}
         users={users}

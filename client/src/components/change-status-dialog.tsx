@@ -24,7 +24,7 @@ export function ChangeStatusDialog({ issue, open, onOpenChange, onChangeStatus, 
   const [selectedStatus, setSelectedStatus] = useState<IssueStatus | "">("");
 
   const handleChangeStatus = () => {
-    if (issue && selectedStatus) {
+    if (selectedStatus && issue) {
       onChangeStatus(issue.id, selectedStatus);
     }
   };

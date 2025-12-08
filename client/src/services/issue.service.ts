@@ -46,4 +46,24 @@ export const issueService = {
       const response = await apiClient.post<Issue>('/issues', data)
       return response.data
    },
+
+   async getComments(issueId: number): Promise<import('@/lib/types').Comment[]> {
+      const response = await apiClient.get<import('@/lib/types').Comment[]>(`/issues/${issueId}/comments`)
+      return response.data
+   },
+
+   async createComment(issueId: number, data: import('@/lib/types').CreateCommentRequest): Promise<import('@/lib/types').Comment> {
+      const response = await apiClient.post<import('@/lib/types').Comment>(`/issues/${issueId}/comments`, data)
+      return response.data
+   },
+
+   async updateComment(commentId: number, data: import('@/lib/types').UpdateCommentRequest): Promise<import('@/lib/types').Comment> {
+      const response = await apiClient.patch<import('@/lib/types').Comment>(`/comments/${commentId}`, data)
+      return response.data
+   },
+
+   async getCodeChanges(issueId: number): Promise<import('@/lib/types').CodeChange[]> {
+      const response = await apiClient.get<import('@/lib/types').CodeChange[]>(`/issues/${issueId}/code-changes`)
+      return response.data
+   },
 }

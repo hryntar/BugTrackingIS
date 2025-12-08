@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const createIssueSchema = z.object({
+const baseCreateIssueSchema = z.object({
    title: z
       .string()
       .min(1, "Title is required")
@@ -11,18 +11,16 @@ export const createIssueSchema = z.object({
       .min(1, "Description is required")
       .min(10, "Description must be at least 10 characters")
       .max(5000, "Description must be less than 5000 characters"),
-   priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"], {
-      required_error: "Priority is required",
-   }),
-   severity: z.enum(["TRIVIAL", "MINOR", "MAJOR", "CRITICAL"], {
-      required_error: "Severity is required",
-   }),
+   priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
+   severity: z.enum(["TRIVIAL", "MINOR", "MAJOR", "CRITICAL"]),
    environment: z
       .string()
       .max(100, "Environment must be less than 100 characters")
       .optional()
-      .nullable(),
-   subscribeToUpdates: z.boolean().optional().default(true),
+      .or(z.literal("")),
+   subscribeToUpdates: z.boolean(),
 });
 
-export type CreateIssueFormData = z.infer<typeof createIssueSchema>;
+export const createIssueSchema = baseCreateIssueSchema;
+
+export type CreateIssueFormData = z.infer<typeof baseCreateIssueSchema>;
